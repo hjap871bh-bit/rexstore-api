@@ -202,11 +202,8 @@ def admin_page():
             <input type="password" id="pass" placeholder="Admin Password" style="width: 200px;">
             <select id="days">
                 <option value="1">1 Day</option>
-                <option value="3">3 Days</option>
                 <option value="7">7 Days</option>
                 <option value="30">30 Days</option>
-                <option value="90">90 Days</option>
-                <option value="365">1 Year</option>
                 <option value="0">Lifetime</option>
             </select>
             <input type="number" id="count" value="1" min="1" max="50" style="width: 80px;">
