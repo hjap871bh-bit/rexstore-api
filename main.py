@@ -159,7 +159,12 @@ def heartbeat(req: HeartbeatRequest):
     
     conn.commit()
     conn.close()
-    return {"status": "ok", "license_time_left": time_left}
+       return {
+        "status": "ok",
+        "token": token,
+        "expires_in": 86400,
+        "license_time_left": time_left if time_left is not None else 0
+    }
 
 # ==================== Admin Panel ====================
 @app.get("/admin", response_class=HTMLResponse)
