@@ -53,6 +53,10 @@ class GenerateRequest(BaseModel):
     count: int = 1
     password: str
 
+class BanRequest(BaseModel):
+    key: str
+    password: str
+
 def hash_hwid(hwid: str) -> str:
     return hashlib.sha256((hwid + SECRET).encode()).hexdigest()[:32]
 
@@ -106,7 +110,8 @@ def auth(req: AuthRequest):
     conn.commit()
     conn.close()
     
-    time_left = None
+    # Calculate time left (0 if lifetime)
+    time_left = 0
     if expires_at:
         delta = datetime.fromisoformat(expires_at) - datetime.utcnow()
         time_left = max(0, int(delta.total_seconds()))
@@ -149,7 +154,7 @@ def heartbeat(req: HeartbeatRequest):
         raise HTTPException(403, "License revoked")
     
     expires_at = lic[0]
-    time_left = None
+    time_left = 0
     if expires_at:
         delta = datetime.fromisoformat(expires_at) - datetime.utcnow()
         time_left = max(0, int(delta.total_seconds()))
@@ -159,12 +164,7 @@ def heartbeat(req: HeartbeatRequest):
     
     conn.commit()
     conn.close()
-       return {
-        "status": "ok",
-        "token": token,
-        "expires_in": 86400,
-        "license_time_left": time_left if time_left is not None else 0
-    }
+    return {"status": "ok", "license_time_left": time_left}
 
 # ==================== Admin Panel ====================
 @app.get("/admin", response_class=HTMLResponse)
@@ -332,10 +332,6 @@ def admin_keys(password: str):
         {"key": r[0], "hwid": r[1], "expires_at": r[2], "last_seen": r[3], "banned": bool(r[4])}
         for r in rows
     ]}
-
-class BanRequest(BaseModel):
-    key: str
-    password: str
 
 @app.post("/admin/ban")
 def admin_ban(req: BanRequest):
